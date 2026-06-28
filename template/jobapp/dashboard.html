@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load get_total_applicant %}
+{% block content %}
+
+<style>
+.bg-image {
+    background-image: url('{% static "images/hero_1.jpg" %}');
+}
+</style>
+
+<section class="section-hero overlay inner-page bg-image" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">لوحة التحكم</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="{% url 'jobapp:home' %}">الرئيسية</a> <span class="mx-2 slash">/</span>
+                    <a href="{% url 'jobapp:job-list' %}">وظيفة</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>لوحة التحكم</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 mb-5">
+                {% include 'messages.html' %}
+
+                <div class="card">
+                    {% if user.role == "employer" %}
+                    <h5 class="card-header text-center">جميع وظائفي</h5>
+                    {% if jobs %}
+                    <table class="table text-center mt-5">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>عنوان الوظيفة</th>
+                                <th>تاريخ النشر</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>الحالة</th>
+                                <th>المتقدمون</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in jobs %}
+                            <tr id="row_{{ job.id }}">
+                                <td class="text-left"><a href="{% url 'jobapp:single-job' job.id %}">{{ job.title }}</a></td>
+                                <td>{{ job.timestamp | date:'M d, Y'  }}</td>
+                                <td>{{ job.last_date | date:'M d, Y' }}</td>
+                                <td>
+                                    {% if job.is_published == True %}
+
+                                        <span class="badge badge-info">منشور</span>
+
+                                    {% else %}
+
+                                        <span class="badge badge-danger px-2">في الانتظار</span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    {% get_total_applicant total_applicants job as applicant_count %}
+
+                                    {% if applicant_count %}
+                                    <a href="{% url 'jobapp:applicants' job.id %}">
+                                        <i class="fa fa-users"></i>
+                                    <span class="badge badge-success text-white">
+                                        {% if applicant_count > 1 %}
+                                            {{ applicant_count }} متقدمون
+                                        {% else %}
+                                            {{ applicant_count }} متقدم
+                                        {% endif %}
+                                    </span>
+
+                                    </a>
+                                    {% endif %}
+
+                                </td>
+                                <td>
+                                    <a class="btn btn-info btn-sm" href="{% url 'jobapp:edit-job' job.id %}"
+                                        role="button">تعديل</a>
+                                        {% if job.is_published == True %}
+                                            {% if job.is_closed == False %}
+                                                <span id="change_job_status_{{ job.id }}">
+                                                    <button data-url="{% url 'jobapp:complete' job.id %}" data-job-id="{{ job.id }}" data-message="بمجرد النقر، سيتم وضع علامة مكتمل على منشورك" class="text-white btn btn-success btn-sm complete-job-btn">إغلاق</button>
+                                                </span>
+                                            {% else %}
+                                                <a class="text-white btn btn-success btn-sm" role="button">مغلق</a>
+                                            {% endif %}
+                                        {% endif %}
+                                        <button data-url="{% url 'jobapp:delete' job.id %}" data-job-id="{{ job.id }}" data-message="بمجرد الحذف، لن تتمكن من استعادة هذا المنشور!" class="btn btn-danger btn-sm delete-job-btn">حذف</button>
+                                    </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="m-5">ليس لديك أي وظيفة حتى الآن !! <a href="{% url 'jobapp:create-job' %}">إنشاء واحدة جديدة.</a></p>
+                    {% endif %}
+                    {% elif user.role == "employee" %}
+
+
+                    <ul class="mb-3 nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">الوظائف المحفوظة</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">الوظائف المتقدمة لها</a>
+                        </li>
+                      </ul>
+                      <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                            <h5 class="card-header text-center">الوظائف المحفوظة</h5>
+                            {% if savedjobs %}
+                            <table class="table text-center mt-5">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>عنوان الوظيفة</th>
+                                        <th>تاريخ النشر</th>
+                                        <th>تاريخ الانتهاء</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in savedjobs %}
+                                    <tr id="row_{{ job.id }}">
+                                        <td><a href="{% url 'jobapp:single-job' job.job.id %}">{{ job.job.title }}</a></td>
+                                        <td>{{ job.timestamp | date:'M d, Y'  }}</td>
+                                        <td>{{ job.job.last_date | date:'M d, Y' }}</td>
+                                        <td>
+                                            <button data-url="{% url 'jobapp:delete-bookmark' job.id %}" data-job-id="{{ job.id }}" data-message="بمجرد الحذف، سيتم إزالة هذا المنشور من قائمة المفضلة الخاصة بك!" class="btn btn-danger btn-sm delete-bookmark-btn">حذف</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <p class="m-5">ليس لديك أي وظيفة محفوظة حتى الآن !! </p>
+                            {% endif %}
+                        </div>
+                        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <h5 class="card-header text-center">الوظائف المتقدمة لها</h5>
+                            {% if appliedjobs %}
+                            <table class="table text-center mt-5">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>عنوان الوظيفة</th>
+                                        <th>تاريخ النشر</th>
+                                        <th>تاريخ الانتهاء</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in appliedjobs %}
+                                    <tr id="row_{{ job.id }}">
+                                        <td><a href="{% url 'jobapp:single-job' job.job.id %}">{{ job.job.title }}</a></td>
+                                        <td>{{ job.timestamp | date:'M d, Y'  }}</td>
+                                        <td>{{ job.job.last_date | date:'M d, Y' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <p class="m-5">ليس لديك أي وظيفة متقدمة لها حتى الآن !! </p>
+                            {% endif %}
+                        </div>
+                        
+                      </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/sweet-alert.js' %}"></script>
+    <script src="{% static 'js/sweet-alert-ajax.js' %}"></script>
+    <script>
+        // Handle complete job buttons
+        document.querySelectorAll('.complete-job-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var url = this.getAttribute('data-url');
+                var jobId = this.getAttribute('data-job-id');
+                var message = this.getAttribute('data-message');
+                call_sw_alert_func(url, jobId, message);
+            });
+        });
+
+        // Handle delete job buttons
+        document.querySelectorAll('.delete-job-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var url = this.getAttribute('data-url');
+                var jobId = this.getAttribute('data-job-id');
+                var message = this.getAttribute('data-message');
+                call_sw_alert_func(url, jobId, message);
+            });
+        });
+
+        // Handle delete bookmark buttons
+        document.querySelectorAll('.delete-bookmark-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var url = this.getAttribute('data-url');
+                var jobId = this.getAttribute('data-job-id');
+                var message = this.getAttribute('data-message');
+                call_sw_alert_func(url, jobId, message);
+            });
+        });
+    </script>
+{% endblock %}

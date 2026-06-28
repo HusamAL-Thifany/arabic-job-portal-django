@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+.bg-image {
+    background-image: url("{% static 'images/hero_1.jpg' %}");
+}
+</style>
+
+    <!-- HOME -->
+    <section class="section-hero overlay inner-page bg-image" id="home-section">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-7">
+            <h1 class="text-white font-weight-bold">{{ applicant.get_full_name }}</h1>
+            <div class="custom-breadcrumbs">
+              <a href="{% url 'jobapp:home' %}">الرئيسية</a> <span class="mx-2 slash">/</span>
+              <span class="text-white"><strong>المتقدم</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="site-section block__18514" id="next-section">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-3 mr-auto">
+            <div class="border p-4 rounded">
+              <ul class="list-unstyled block__47528 mb-0">
+                <li><span class="active">تصميم الجرافيك</span></li>
+                <li><a href="#">Topic 1</a></li>
+                <li><a href="#">Topic 2</a></li>
+
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-8">
+            <span class="text-primary d-block mb-5"><span class="icon-magnet display-1"></span></span>
+            <h2 class="mb-4">{{ applicant.get_full_name }}</h2>
+            <p><h3>البريد الإلكتروني:</h3>{{ applicant.email }}</p>
+            <p><h3>الجنس:</h3>
+                {% if applicant.gender == 'M' %}
+                    ذكر
+                {% else %}
+                    أنثى
+                {% endif %}
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="mb-4">
+              <h4>إجراءات:</h4>
+              <div class="btn-group" role="group">
+                <a href="{% url 'jobapp:accept-applicant' applicant.id %}" class="btn btn-success btn-md mt-4" onclick="return confirm('هل أنت متأكد من قبول هذا المتقدم؟')">قبول المتقدم</a>
+                <a href="{% url 'jobapp:email-communication-with-recipient' applicant.id %}" class="btn btn-primary btn-md mt-4">التواصل عبر البريد الإلكتروني</a>
+                <a href="{% url 'jobapp:dashboard' %}" class="btn btn-secondary btn-md mt-4">العودة للوحة التحكم</a>
+              </div>
+            </div>
+
+            <p><a href="mailto:{{ applicant.email }}" class="btn btn-primary btn-md mt-4">تواصل</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+{% endblock %}
